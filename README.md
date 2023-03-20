@@ -1,5 +1,5 @@
 # Introduction to Deep Learning
-Exercises from the Introduction to Deep Learning course, University of Helsinki, Finland.
+Exercises from the Introduction to Deep Learning course, University of Helsinki, Finland.  
 Teachers: **Roman Yangarber**, **Hande Celikkanat**.
 
 Author: **Giacomo Grandi**
