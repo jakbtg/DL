@@ -14,25 +14,20 @@ import random
 
 #ATTENTION: If necessary, add the paths to your data_semeval.py and paths.py here:
 #import sys
-#sys.path.append('</path/to/below/modules>')
+#sys.path.append('</Users/jak/Documents/Uni/DL - Helsinki/Esercizi/intro_to_dl_assignment_1/src/data_semeval.py>')
 from data_semeval import *
 from paths import data_dir
 
-# TODO: remove
-torch.set_num_threads(24)
 
 #--- hyperparameters ---
 
 N_CLASSES = len(LABEL_INDICES)
-N_EPOCHS = 20
+N_EPOCHS = 10
 LEARNING_RATE = 0.05
-BATCH_SIZE = 10
+BATCH_SIZE = 1
 REPORT_EVERY = 1
-IS_VERBOSE = False # Changed to False, used to be True
+IS_VERBOSE = True
 
-# Hyperparameters we added
-HIDDEN_SIZE_1 = 64
-HIDDEN_SIZE_2 = 64
 
 def make_bow(tweet, indices):
     feature_ids = list(indices[tok] for tok in tweet['BODY'] if tok in indices)
@@ -56,164 +51,70 @@ def generate_bow_representations(data):
 def label_to_idx(label):
     return torch.LongTensor([LABEL_INDICES[label]])
 
+
+
 #--- model ---
 
 class FFNN(nn.Module):
-
-    def __init__(self, vocab_size, n_classes, extra_arg_1=32, extra_arg_2=None):
+    # Feel free to add whichever arguments you like here.
+    def __init__(self, vocab_size, n_classes, extra_arg_1=None, extra_arg_2=None):
         super(FFNN, self).__init__()
-
-        """
-        OUR CODE HERE
-        """
-        self.second_layer = False
-
-        # Arguments initialization
-        self.input_size = vocab_size
-        self.hidden_size_1 = extra_arg_1
-        self.hidden_size_2 = extra_arg_2
-        self.output_size = n_classes
-
-        """
-        Layers initialization:
-            - fc1 = first layer: input_size -> hidden_size_1
-            - relu1 = non-linearity
-            - fc2 (optional, added only if HIDDEN_SIZE_2 != None) = second layer: hidden_size_1 -> hidden_size_2
-            - relu2 = non-linearity
-            - out = output layer: hidden_size_2 -> output_size
-        """
-        # Input layer and first hidden layer
-        self.fc1 = nn.Linear(self.input_size, self.hidden_size_1
-        )
-        self.relu1 = nn.ReLU()
-
-        # If extra_arg_2: second hidden layer
-        if self.hidden_size_2:
-            # Second hidden layer
-            self.second_layer = True
-            self.fc2 = nn.Linear(self.hidden_size_1, self.hidden_size_2)
-            self.relu2 = nn.ReLU()
-
-            # Output layer
-            self.out = nn.Linear(self.hidden_size_2, self.output_size)
-        # If not extra_arg_2: only one hidden layer
-        else:
-            self.out = nn.Linear(self.hidden_size_1, self.output_size)
-
+        # WRITE CODE HERE
+        pass
 
     def forward(self, x):
-        """
-        OUR CODE HERE
-        """
-        # Input layer and first hidden layer
-        output = self.fc1(x)
-        output = self.relu1(output)
+        # WRITE CODE HERE
+        pass
 
-        # If second hidden layer
-        if self.second_layer:
-            output = self.fc2(output)
-            output = self.relu2(output)
 
-        # If not second hidden layer
-        output = self.out(output)
-
-        # Activation function
-        return F.log_softmax(output, dim=1)
 
 #--- data loading ---
 data = read_semeval_datasets(data_dir)
 indices, vocab_size = generate_bow_representations(data)
 
+
+
 #--- set up ---
 
-"""
-OUR CODE HERE
-"""
-model = FFNN(vocab_size, N_CLASSES, HIDDEN_SIZE_1, HIDDEN_SIZE_2)
+# WRITE CODE HERE
+model = FFNN(vocab_size, N_CLASSES) #add extra arguments here if you use
+loss_function = None
+optimizer = None
 
-# Loss function is a negative log likelihood loss
-loss_function = torch.nn.NLLLoss()
-# Optimizer is SGD
-optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE)
+
 
 #--- training ---
 for epoch in range(N_EPOCHS):
     total_loss = 0
+    # Generally speaking, it's a good idea to shuffle your
+    # datasets once every epoch.
     random.shuffle(data['training'])    
 
     for i in range(int(len(data['training'])/BATCH_SIZE)):
         minibatch = data['training'][i*BATCH_SIZE:(i+1)*BATCH_SIZE]
 
-        """
-        OUR CODE HERE
-        """
-        # Set gradients to zero
-        optimizer.zero_grad()
-
-        # Prepare minibatch for training
-        ps = []
-        ts = []
-        for j in range(BATCH_SIZE):
-            ps.append(minibatch[j]['BOW'].tolist()[0])
-            ts.append(label_to_idx(minibatch[j]['SENTIMENT']))
-
-        probs = model(torch.tensor(ps))
-
-        # Calculate loss function, sum loss to total loss, calculate gradient
-        loss = loss_function(probs, torch.tensor(ts))
-        total_loss += loss.item()
-        loss.backward()
-
-        # Update optimizer
-        optimizer.step()
-
+        # WRITE CODE HERE            
+        pass
+                              
     if ((epoch+1) % REPORT_EVERY) == 0:
         print('epoch: %d, loss: %.4f' % (epoch+1, total_loss*BATCH_SIZE/len(data['training'])))
 
-#--- test ---
 
-# Test on test set
+
+#--- test ---
 correct = 0
 with torch.no_grad():
     for tweet in data['test.gold']:
         gold_class = label_to_idx(tweet['SENTIMENT'])
 
-        """
-        OUR CODE HERE
-        """
-        id = tweet['ID']
-        tested = [d for d in data['test.input'] if d['ID'] == id]
-        
-        probs = model(tested[0]['BOW'])
-        predicted = torch.argmax(probs, dim=1).cpu()
-        if predicted == gold_class:
-            correct += 1
+        # WRITE CODE HERE
+        # You can, but for the sake of this homework do not have to,
+        # use batching for the test data.
+        predicted = -1
 
         if IS_VERBOSE:
             print('TEST DATA: %s, GOLD LABEL: %s, GOLD CLASS %d, OUTPUT: %d' % 
                  (' '.join(tweet['BODY'][:-1]), tweet['SENTIMENT'], gold_class, predicted))
 
-    print('Test accuracy on test set: %.2f' % (100.0 * correct / len(data['test.gold'])))
+    print('test accuracy: %.2f' % (100.0 * correct / len(data['test.gold'])))
 
-# Test on development set
-correct = 0
-with torch.no_grad():
-    for tweet in data['development.gold']:
-        gold_class = label_to_idx(tweet['SENTIMENT'])
-
-        """
-        OUR CODE HERE
-        """
-        id = tweet['ID']
-        tested = [d for d in data['development.input'] if d['ID'] == id]
-        
-        probs = model(tested[0]['BOW'])
-        predicted = torch.argmax(probs, dim=1).cpu()
-        if predicted == gold_class:
-            correct += 1
-
-        if IS_VERBOSE:
-            print('TEST DATA: %s, GOLD LABEL: %s, GOLD CLASS %d, OUTPUT: %d' % 
-                 (' '.join(tweet['BODY'][:-1]), tweet['SENTIMENT'], gold_class, predicted))
-
-    print('Test accuracy on development set: %.2f' % (100.0 * correct / len(data['development.gold'])))
