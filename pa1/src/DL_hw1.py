@@ -59,12 +59,59 @@ class FFNN(nn.Module):
     # Feel free to add whichever arguments you like here.
     def __init__(self, vocab_size, n_classes, extra_arg_1=None, extra_arg_2=None):
         super(FFNN, self).__init__()
-        # WRITE CODE HERE
-        pass
+
+        # --------------
+        # CODE HERE
+        # --------------
+
+        # Define the sizes of the layers of the network
+        self.input_size = vocab_size
+        self.hidden_size_1 = extra_arg_1
+        self.hidden_size_2 = extra_arg_2
+        self.output_size = n_classes
+
+        # Define the layers of the network
+        # - fc1 = fully connected first layer: input_size -> hidden_size_1
+        # - relu1 = non-linearity
+        # - fc2 = fully connected second layer: hidden_size_1 -> hidden_size_2 (only if extra_arg_2 is not None)
+        # - relu2 = non-linearity
+        # - out = output layer: hidden_size_2 -> output_size
+
+        self.fc1 = nn.Linear(self.input_size, self.hidden_size_1)
+        self.relu1 = nn.ReLU()
+        if self.hidden_size_2:
+            self.fc2 = nn.Linear(self.hidden_size_1, self.hidden_size_2)
+            self.relu2 = nn.ReLU()
+            self.out = nn.Linear(self.hidden_size_2, self.output_size)
+        else:
+            self.out = nn.Linear(self.hidden_size_1, self.output_size)
+
+
+        
 
     def forward(self, x):
-        # WRITE CODE HERE
-        pass
+        
+        # --------------
+        # CODE HERE
+        # --------------
+
+        # Define the forward pass of the network as a pipeline
+        output = self.fc1(x)
+        output = self.relu1(output)
+        
+        # If there is a second hidden layer, add it to the pipeline
+        if self.hidden_size_2:
+            output = self.fc2(output)
+            output = self.relu2(output)
+        
+        output = self.out(output)
+
+        # Need to apply log_softmax to the output because we are using NLLLoss
+        return F.log_softmax(output, dim=1)
+
+        
+
+        
 
 
 
