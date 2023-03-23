@@ -20,7 +20,6 @@ from paths import data_dir
 
 
 #--- hyperparameters ---
-
 N_CLASSES = len(LABEL_INDICES)
 N_EPOCHS = 10
 LEARNING_RATE = 0.05
@@ -54,7 +53,6 @@ def label_to_idx(label):
 
 
 #--- model ---
-
 class FFNN(nn.Module):
     # Feel free to add whichever arguments you like here.
     def __init__(self, vocab_size, n_classes, extra_arg_1=None, extra_arg_2=None):
@@ -109,9 +107,6 @@ class FFNN(nn.Module):
         # Need to apply log_softmax to the output because we are using NLLLoss
         return F.log_softmax(output, dim=1)
 
-        
-
-        
 
 
 
@@ -122,11 +117,11 @@ indices, vocab_size = generate_bow_representations(data)
 
 
 #--- set up ---
-
-# WRITE CODE HERE
-model = FFNN(vocab_size, N_CLASSES) #add extra arguments here if you use
-loss_function = None
-optimizer = None
+model = FFNN(vocab_size, N_CLASSES, extra_arg_1=32)
+# Negative Log Likelihood Loss
+loss_function = nn.NLLLoss()
+# SGD optimizer
+optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE) 
 
 
 
@@ -140,8 +135,27 @@ for epoch in range(N_EPOCHS):
     for i in range(int(len(data['training'])/BATCH_SIZE)):
         minibatch = data['training'][i*BATCH_SIZE:(i+1)*BATCH_SIZE]
 
-        # WRITE CODE HERE            
-        pass
+        # --------------
+        # CODE HERE
+        # --------------
+
+        # Prepare input matrix and target vector
+        # - input_matrix = matrix of size BATCH_SIZE x vocab_size
+        # - target_vector = vector of size BATCH_SIZE
+        input_matrix = torch.zeros(BATCH_SIZE, vocab_size)
+        target_vector = torch.zeros(BATCH_SIZE, dtype=torch.long)
+        for j in range(BATCH_SIZE):
+            input_matrix[j] = minibatch[j]['BOW']
+            target_vector[j] = label_to_idx(minibatch[j]['SENTIMENT'])
+
+        # Compute predictions and loss
+        predictions = model(input_matrix)
+        loss = loss_function(predictions, target_vector)
+
+        # Backpropagation
+        optimizer.zero_grad() # in order to avoid accumulating gradients
+        loss.backward()
+        optimizer.step() # update weights of the model
                               
     if ((epoch+1) % REPORT_EVERY) == 0:
         print('epoch: %d, loss: %.4f' % (epoch+1, total_loss*BATCH_SIZE/len(data['training'])))
