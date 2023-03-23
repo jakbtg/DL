@@ -11,6 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import random
+import time
 
 #ATTENTION: If necessary, add the paths to your data_semeval.py and paths.py here:
 #import sys
@@ -21,11 +22,15 @@ from paths import data_dir
 
 #--- hyperparameters ---
 N_CLASSES = len(LABEL_INDICES)
-N_EPOCHS = 10
-LEARNING_RATE = 0.05
-BATCH_SIZE = 1
+N_EPOCHS = 20
+LEARNING_RATE = 0.1
+BATCH_SIZE = 10
 REPORT_EVERY = 1
-IS_VERBOSE = True
+IS_VERBOSE = False
+
+#--- hidden layers hyperparameters ---
+HIDDEN_SIZE_1 = 64
+HIDDEN_SIZE_2 = 32
 
 
 def make_bow(tweet, indices):
@@ -117,7 +122,7 @@ indices, vocab_size = generate_bow_representations(data)
 
 
 #--- set up ---
-model = FFNN(vocab_size, N_CLASSES, extra_arg_1=32)
+model = FFNN(vocab_size, N_CLASSES, HIDDEN_SIZE_1, HIDDEN_SIZE_2)
 # Negative Log Likelihood Loss
 loss_function = nn.NLLLoss()
 # SGD optimizer
@@ -126,11 +131,14 @@ optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
 
 
 #--- training ---
+total_elapsed_time = time.time()
 for epoch in range(N_EPOCHS):
     total_loss = 0
     # Generally speaking, it's a good idea to shuffle your
     # datasets once every epoch.
-    random.shuffle(data['training'])    
+    random.shuffle(data['training'])
+
+    starting_time_epoch = time.time()
 
     for i in range(int(len(data['training'])/BATCH_SIZE)):
         minibatch = data['training'][i*BATCH_SIZE:(i+1)*BATCH_SIZE]
@@ -156,26 +164,38 @@ for epoch in range(N_EPOCHS):
         predictions = model(input_matrix)
         loss = loss_function(predictions, target_vector)
 
+        # Update total loss
+        total_loss += loss.item()
+
         # Backpropagation
         optimizer.zero_grad() # in order to avoid accumulating gradients
         loss.backward()
         optimizer.step() # update weights of the model
-                              
+                      
     if ((epoch+1) % REPORT_EVERY) == 0:
         print('epoch: %d, loss: %.4f' % (epoch+1, total_loss*BATCH_SIZE/len(data['training'])))
+        # print(f'epoch {epoch + 1}: {time.time() - starting_time_epoch:.2f} seconds, total time: {time.time() - total_elapsed_time:.2f} seconds')
 
 
 
-#--- test ---
+
+#--- test set ---
 correct = 0
 with torch.no_grad():
     for tweet in data['test.gold']:
         gold_class = label_to_idx(tweet['SENTIMENT'])
 
-        # WRITE CODE HERE
-        # You can, but for the sake of this homework do not have to,
-        # use batching for the test data.
-        predicted = -1
+        # --------------
+        # CODE HERE
+        # --------------
+
+        # Compute predictions
+        predictions = model(tweet['BOW'])
+
+        # Compute accuracy
+        predicted = torch.argmax(predictions)
+        if predicted == gold_class:
+            correct += 1
 
         if IS_VERBOSE:
             print('TEST DATA: %s, GOLD LABEL: %s, GOLD CLASS %d, OUTPUT: %d' % 
@@ -183,3 +203,26 @@ with torch.no_grad():
 
     print('test accuracy: %.2f' % (100.0 * correct / len(data['test.gold'])))
 
+#--- development set ---
+correct = 0
+with torch.no_grad():
+    for tweet in data['development.gold']:
+        gold_class = label_to_idx(tweet['SENTIMENT'])
+
+        # --------------
+        # CODE HERE
+        # --------------
+
+        # Compute predictions
+        predictions = model(tweet['BOW'])
+
+        # Compute accuracy
+        predicted = torch.argmax(predictions)
+        if predicted == gold_class:
+            correct += 1
+
+        if IS_VERBOSE:
+            print('DEV DATA: %s, GOLD LABEL: %s, GOLD CLASS %d, OUTPUT: %d' % 
+                 (' '.join(tweet['BODY'][:-1]), tweet['SENTIMENT'], gold_class, predicted))
+
+    print('dev accuracy: %.2f' % (100.0 * correct / len(data['development.gold'])))
