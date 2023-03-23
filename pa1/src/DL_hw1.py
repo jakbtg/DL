@@ -142,11 +142,15 @@ for epoch in range(N_EPOCHS):
         # Prepare input matrix and target vector
         # - input_matrix = matrix of size BATCH_SIZE x vocab_size
         # - target_vector = vector of size BATCH_SIZE
-        input_matrix = torch.zeros(BATCH_SIZE, vocab_size)
-        target_vector = torch.zeros(BATCH_SIZE, dtype=torch.long)
-        for j in range(BATCH_SIZE):
-            input_matrix[j] = minibatch[j]['BOW']
-            target_vector[j] = label_to_idx(minibatch[j]['SENTIMENT'])
+        # Use torch.cat() to concatenate the tensors in the minibatch 
+        input_matrix = torch.cat([tweet['BOW'] for tweet in minibatch])
+        target_vector = torch.cat([label_to_idx(tweet['SENTIMENT']) for tweet in minibatch])
+
+        # input_matrix = torch.zeros(BATCH_SIZE, vocab_size)
+        # target_vector = torch.zeros(BATCH_SIZE, dtype=torch.long)
+        # for j in range(BATCH_SIZE):
+        #     input_matrix[j] = minibatch[j]['BOW']
+        #     target_vector[j] = label_to_idx(minibatch[j]['SENTIMENT'])
 
         # Compute predictions and loss
         predictions = model(input_matrix)
