@@ -2,3 +2,4 @@
 .venv
 .ipynb_checkpoints
 __pycache__
+/pa2/data
