@@ -22,13 +22,13 @@ from paths import data_dir
 
 #--- hyperparameters ---
 N_CLASSES = len(LABEL_INDICES)
-N_EPOCHS = 20
-LEARNING_RATE = 0.1
-BATCH_SIZE = 15
+N_EPOCHS = 30
+LEARNING_RATE = 0.2
+BATCH_SIZE = 100
 REPORT_EVERY = 1
 IS_VERBOSE = False
 
-#--- hidden layers hyperparameters ---
+#--- hidden layers nodes ---
 HIDDEN_SIZE_1 = 64
 HIDDEN_SIZE_2 = 64
 
