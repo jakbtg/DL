@@ -23,7 +23,7 @@ from paths import data_dir
 #--- hyperparameters ---
 N_CLASSES = len(LABEL_INDICES)
 N_EPOCHS = 30
-LEARNING_RATE = 0.2
+LEARNING_RATE = 0.15
 BATCH_SIZE = 100
 REPORT_EVERY = 1
 IS_VERBOSE = False
@@ -210,6 +210,7 @@ with torch.no_grad():
                  (' '.join(tweet['BODY'][:-1]), tweet['SENTIMENT'], gold_class, predicted))
 
     print('test accuracy: %.2f' % (100.0 * correct / len(data['test.gold'])))
+    test_accuracy = 100.0 * correct / len(data['test.gold'])
 
 #--- development set ---
 correct = 0
@@ -234,3 +235,33 @@ with torch.no_grad():
                  (' '.join(tweet['BODY'][:-1]), tweet['SENTIMENT'], gold_class, predicted))
 
     print('dev accuracy: %.2f' % (100.0 * correct / len(data['development.gold'])))
+    dev_accuracy = 100.0 * correct / len(data['development.gold'])
+
+
+# --- save best results ---
+# open file if it exists, otherwise create it
+try:
+    f = open('results.txt', 'r')
+    best_results = f.readlines()
+    f.close()
+except FileNotFoundError:
+    f = open('results.txt', 'w')
+    f.close()
+    best_results = []
+
+# if test accuracy is better than the previous best, save it
+if len(best_results) == 0 or test_accuracy > float(best_results[-1].split(':')[-1].strip()):
+    print('Got new best results!')
+    f = open('results.txt', 'w')
+    text = 'Best results with:\n'
+    text += f'hidden size 1: {HIDDEN_SIZE_1}\n'
+    text += f'hidden size 2: {HIDDEN_SIZE_2}\n'
+    text += f'num epochs: {N_EPOCHS}\n'
+    text += f'learning rate: {LEARNING_RATE}\n'
+    text += f'batch size: {BATCH_SIZE}\n'
+    text += f'dev accuracy: {dev_accuracy:.2f}\n'
+    text += f'test accuracy: {test_accuracy:.2f}\n'
+    f.write(text)
+    f.close()
+else:
+    print('No improvement')
