@@ -183,6 +183,7 @@ for epoch in range(N_EPOCHS):
     if ((epoch+1) % REPORT_EVERY) == 0:
         print('epoch: %d, loss: %.4f' % (epoch+1, total_loss*BATCH_SIZE/len(data['training'])))
         # print(f'epoch {epoch + 1}: {time.time() - starting_time_epoch:.2f} seconds, total time: {time.time() - total_elapsed_time:.2f} seconds')
+print(f'total training time: {time.time() - total_elapsed_time:.2f} seconds')
 
 
 
