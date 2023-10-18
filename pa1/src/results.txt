@@ -1,8 +1,8 @@
 Best results with:
-hidden size 1: 128
-hidden size 2: 128
+hidden size 1: 64
+hidden size 2: 64
 num epochs: 30
-learning rate: 0.2
+learning rate: 0.15
 batch size: 100
-dev accuracy: 65.20
-test accuracy: 66.74
+dev accuracy: 66.28
+test accuracy: 66.89
