@@ -15,9 +15,9 @@ N_EPOCHS = 30
 BATCH_SIZE_TRAIN = 100
 BATCH_SIZE_TEST = 100
 LR = 0.1
-OPTIMIZER = 'Adagrad'
+OPTIMIZER = 'SGD_momentum'
 # SGD, SGD_momentum, Adam, Adagrad
-BATCH_NORM = True
+BATCH_NORM = False
 DROPOUT = False
 
 
@@ -96,16 +96,12 @@ class CNN(nn.Module):
         # WRITE CODE HERE
         x = self.cnn_layers(x)
 
-        # with batch normalization
-        # if BATCH_NORM:
-        #     x = self.batch_norm(x)
-
         x = self.flatten(x)
         x = self.linear_relu_stack(x)
 
-        # with dropout
         if DROPOUT:
             x = self.dropout(x)
+
         return x
 
 
@@ -205,7 +201,7 @@ for epoch in range(N_EPOCHS):
     avg_dev_loss = np.mean(dev_losses)
 
 
-    if epoch > 10 and avg_dev_loss > prev_avg_dev_loss:
+    if epoch > 30 and avg_dev_loss > prev_avg_dev_loss:
     # if avg_dev_loss > prev_avg_dev_loss:
         count += 1
         print(f'Count: {count}')

@@ -188,3 +188,29 @@ Dev accuracy: 79.20
 Test accuracy: 82.27
 Total training time: 00h:02m:33s
 --------------------------------------------------
+CNN results with the following parameters:
+Max Epochs: 30
+Actual Epochs: 30
+Batch size: 100
+Learning rate: 0.1
+Optimizer: SGD
+Batch norm: False
+Dropout: False
+Training accuracy: 100.00
+Dev accuracy: 85.75
+Test accuracy: 87.70
+Total training time: 00h:05m:47s
+--------------------------------------------------
+CNN results with the following parameters:
+Max Epochs: 30
+Actual Epochs: 30
+Batch size: 100
+Learning rate: 0.1
+Optimizer: SGD_momentum
+Batch norm: False
+Dropout: False
+Training accuracy: 100.00
+Dev accuracy: 87.87
+Test accuracy: 89.73
+Total training time: 00h:05m:49s
+--------------------------------------------------
