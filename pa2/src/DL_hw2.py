@@ -16,9 +16,9 @@ BATCH_SIZE_TRAIN = 100
 BATCH_SIZE_TEST = 100
 LR = 0.1
 OPTIMIZER = 'Adagrad'
-# SGD, Adam, Adagrad, SGD_momentum
-BATCH_NORM = False
-DROPOUT = True
+# SGD, SGD_momentum, Adam, Adagrad
+BATCH_NORM = True
+DROPOUT = False
 
 
 #--- fixed constants ---
@@ -60,14 +60,26 @@ class CNN(nn.Module):
         # CNN layers: 2 conv layers, 2 pooling layers    
         # FFNN layers: 3 linear layers that learn the classification
         # Using ReLU as the activation function
-        self.cnn_layers = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=12, kernel_size=4),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(in_channels=12, out_channels=32, kernel_size=4),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2)
-        )
+        if BATCH_NORM:
+            self.cnn_layers = nn.Sequential(
+                nn.Conv2d(in_channels=3, out_channels=12, kernel_size=4),
+                nn.ReLU(),
+                nn.BatchNorm2d(12),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                nn.Conv2d(in_channels=12, out_channels=32, kernel_size=4),
+                nn.ReLU(),
+                nn.BatchNorm2d(32),
+                nn.MaxPool2d(kernel_size=2, stride=2)
+            )
+        else:    
+            self.cnn_layers = nn.Sequential(
+                nn.Conv2d(in_channels=3, out_channels=12, kernel_size=4),
+                nn.ReLU(),
+                nn.MaxPool2d(kernel_size=2, stride=2),
+                nn.Conv2d(in_channels=12, out_channels=32, kernel_size=4),
+                nn.ReLU(),
+                nn.MaxPool2d(kernel_size=2, stride=2)
+            )
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(32*4*4, 120),
@@ -77,7 +89,7 @@ class CNN(nn.Module):
             nn.Linear(96, num_classes)
         )
         self.dropout = nn.Dropout(p=0.2)
-        self.batch_norm = nn.BatchNorm2d(32)
+        # self.batch_norm = nn.BatchNorm2d(32)
 
 
     def forward(self, x):
@@ -85,8 +97,8 @@ class CNN(nn.Module):
         x = self.cnn_layers(x)
 
         # with batch normalization
-        if BATCH_NORM:
-            x = self.batch_norm(x)
+        # if BATCH_NORM:
+        #     x = self.batch_norm(x)
 
         x = self.flatten(x)
         x = self.linear_relu_stack(x)
