@@ -15,6 +15,7 @@ N_EPOCHS = 10
 BATCH_SIZE_TRAIN = 100
 BATCH_SIZE_TEST = 100
 LR = 0.1
+OPTIMIZER = 'Adam'
 
 
 #--- fixed constants ---
@@ -93,17 +94,26 @@ model = CNN().to(device)
 print(model)
 
 # WRITE CODE HERE
-optimizer = optim.SGD(model.parameters(), lr=LR)
-# optimizer = optim.Adam(model.parameters(), lr=LR)
+if OPTIMIZER == 'SGD':
+    optimizer = optim.SGD(model.parameters(), lr=LR)
+elif OPTIMIZER == 'Adam':
+    optimizer = optim.Adam(model.parameters(), lr=LR)
+elif OPTIMIZER == 'Adagrad':
+    optimizer = optim.Adagrad(model.parameters(), lr=LR)
 loss_function = nn.CrossEntropyLoss()
 
 
 #--- training ---
 starting_time = time.time()
+actual_epochs = 0
+
 for epoch in range(N_EPOCHS):
     train_loss = 0
     train_correct = 0
     total = 0
+    
+    training_accuracies = []
+    avg_training_accuracy = 0
     
     for batch_num, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
@@ -123,6 +133,10 @@ for epoch in range(N_EPOCHS):
         print('Training: Epoch %d - Batch %d/%d: Loss: %.4f | Train Acc: %.3f%% (%d/%d)' % 
               (epoch, batch_num+1, len(train_loader), train_loss / (batch_num + 1), 
                100. * train_correct / total, train_correct, total))
+        
+        training_accuracies.append(100. * train_correct / total)
+
+    avg_training_accuracy = np.mean(training_accuracies)
     
     # WRITE CODE HERE
     # Please implement early stopping here.
@@ -132,12 +146,21 @@ for epoch in range(N_EPOCHS):
     dev_loss = 0
     dev_correct = 0
     total = 0
+
+    dev_accuracies = []
+    avg_dev_accuracy = 0
+
+    prev_avg_dev_loss = float('inf')
+    
+    dev_losses = []
+    avg_dev_loss = 0
     
     for batch_num, (data, target) in enumerate(dev_loader):
         data, target = data.to(device), target.to(device)
         output = model(data)
         loss = loss_function(output, target)
         dev_loss += loss.item()
+        dev_losses.append(dev_loss)
         _, predictions = torch.max(output.data, 1)
         dev_correct += (predictions == target).sum().item()
         total += target.size(0)
@@ -146,9 +169,17 @@ for epoch in range(N_EPOCHS):
               (epoch, batch_num+1, len(dev_loader), dev_loss / (batch_num + 1), 
                100. * dev_correct / total, dev_correct, total))
         
-    # if epoch > 0 and dev_loss > prev_dev_loss:
-    #     break
-    # prev_dev_loss = dev_loss
+        dev_accuracies.append(100. * dev_correct / total)
+
+    avg_dev_accuracy = np.mean(dev_accuracies)
+    avg_dev_loss = np.mean(dev_losses)
+        
+    if epoch > 5 and avg_dev_loss > prev_avg_dev_loss:
+        print('Early stopping')
+        break
+    prev_avg_dev_loss = avg_dev_loss
+
+    actual_epochs += 1
 
 
 
@@ -157,6 +188,9 @@ for epoch in range(N_EPOCHS):
 test_loss = 0
 test_correct = 0
 total = 0
+
+test_accuracies = []
+avg_test_accuracy = 0
 
 model.eval()
 with torch.no_grad():
@@ -175,18 +209,36 @@ with torch.no_grad():
         print('Evaluating: Batch %d/%d: Loss: %.4f | Test Acc: %.3f%% (%d/%d)' % 
               (batch_num+1, len(test_loader), test_loss / (batch_num + 1), 
                100. * test_correct / total, test_correct, total))
+        
+        test_accuracies.append(100. * test_correct / total)
+
+    avg_test_accuracy = np.mean(test_accuracies)
 
 
-text = 'CNN results:\n'
-text += 'Epochs: %d\n' % N_EPOCHS
-text += 'Batch size: %d\n' % BATCH_SIZE_TRAIN
-text += 'Learning rate: %f\n' % LR
-text += 'Optimizer: SGD\n'
-text += 'Train accuracy: %.2f\n' % (100. * train_correct / total)
-text += 'Dev accuracy: %.2f\n' % (100. * dev_correct / total)
-text += 'Test accuracy: %.2f\n' % (100. * test_correct / total)
-# get time in minutes and seconds
-m, s = divmod(time.time() - starting_time, 60)
-text += f'Total training time: {m:.0f}:{s:.0f} minutes\n'
+text = 'CNN results with the following parameters:\n'
+
+text += f'Max Epochs: {N_EPOCHS}\n'
+text += f'Actual Epochs: {actual_epochs}\n'
+text += f'Batch size: {BATCH_SIZE_TRAIN}\n'
+text += f'Learning rate: {LR}\n'
+text += f'Optimizer: {OPTIMIZER}\n'
+
+text += f'Training accuracy: {avg_training_accuracy:.2f}\n'
+text += f'Dev accuracy: {avg_dev_accuracy:.2f}\n'
+text += f'Test accuracy: {avg_test_accuracy:.2f}\n'
+
+elapsed_time = time.time() - starting_time
+text += f'Total training time: {time.strftime("%Hh:%Mm:%Ss", time.gmtime(elapsed_time))}\n'
+text += '-' * 50 + '\n'
 print(text)
-# print('Total training time: %.2f seconds' % (time.time() - starting_time))
+
+# save results to file if some of the hyperparameters were changed
+with open('results.txt', 'a+') as f:
+    lines = f.readlines()
+    lines = lines[:-5]
+    text = text.split('\n')[:-5]
+    for line, text_line in zip(lines, text):
+        if line != text_line:
+            f.write('\n'.join(text))
+            break
+
