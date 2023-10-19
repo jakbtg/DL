@@ -14,9 +14,11 @@ import numpy as np
 N_EPOCHS = 30
 BATCH_SIZE_TRAIN = 100
 BATCH_SIZE_TEST = 100
-LR = 0.15
-OPTIMIZER = 'SGD_momentum'
+LR = 0.1
+OPTIMIZER = 'Adagrad'
 # SGD, Adam, Adagrad, SGD_momentum
+BATCH_NORM = False
+DROPOUT = True
 
 
 #--- fixed constants ---
@@ -74,13 +76,24 @@ class CNN(nn.Module):
             nn.ReLU(),
             nn.Linear(96, num_classes)
         )
+        self.dropout = nn.Dropout(p=0.2)
+        self.batch_norm = nn.BatchNorm2d(32)
 
 
     def forward(self, x):
         # WRITE CODE HERE
         x = self.cnn_layers(x)
+
+        # with batch normalization
+        if BATCH_NORM:
+            x = self.batch_norm(x)
+
         x = self.flatten(x)
         x = self.linear_relu_stack(x)
+
+        # with dropout
+        if DROPOUT:
+            x = self.dropout(x)
         return x
 
 
@@ -235,6 +248,8 @@ text += f'Actual Epochs: {actual_epochs}\n'
 text += f'Batch size: {BATCH_SIZE_TRAIN}\n'
 text += f'Learning rate: {LR}\n'
 text += f'Optimizer: {OPTIMIZER}\n'
+text += f'Batch norm: {BATCH_NORM}\n'
+text += f'Dropout: {DROPOUT}\n'
 
 text += f'Training accuracy: {avg_training_accuracy:.2f}\n'
 text += f'Dev accuracy: {avg_dev_accuracy:.2f}\n'
