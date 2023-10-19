@@ -14,8 +14,9 @@ import numpy as np
 N_EPOCHS = 30
 BATCH_SIZE_TRAIN = 100
 BATCH_SIZE_TEST = 100
-LR = 0.2
-OPTIMIZER = 'SGD' # SGD, Adam, Adagrad, SGD_momentum
+LR = 0.15
+OPTIMIZER = 'SGD_momentum'
+# SGD, Adam, Adagrad, SGD_momentum
 
 
 #--- fixed constants ---
@@ -179,8 +180,8 @@ for epoch in range(N_EPOCHS):
     avg_dev_loss = np.mean(dev_losses)
 
 
-    # if epoch > 10 and avg_dev_loss > prev_avg_dev_loss:
-    if avg_dev_loss > prev_avg_dev_loss:
+    if epoch > 10 and avg_dev_loss > prev_avg_dev_loss:
+    # if avg_dev_loss > prev_avg_dev_loss:
         count += 1
         print(f'Count: {count}')
         if count == 2:
