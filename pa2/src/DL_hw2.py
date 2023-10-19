@@ -11,11 +11,11 @@ import numpy as np
 
 
 #--- hyperparameters ---
-N_EPOCHS = 10
+N_EPOCHS = 30
 BATCH_SIZE_TRAIN = 100
 BATCH_SIZE_TEST = 100
-LR = 0.1
-OPTIMIZER = 'Adam'
+LR = 0.2
+OPTIMIZER = 'SGD' # SGD, Adam, Adagrad, SGD_momentum
 
 
 #--- fixed constants ---
@@ -56,6 +56,7 @@ class CNN(nn.Module):
         # WRITE CODE HERE
         # CNN layers: 2 conv layers, 2 pooling layers    
         # FFNN layers: 3 linear layers that learn the classification
+        # Using ReLU as the activation function
         self.cnn_layers = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=12, kernel_size=4),
             nn.ReLU(),
@@ -97,15 +98,19 @@ print(model)
 if OPTIMIZER == 'SGD':
     optimizer = optim.SGD(model.parameters(), lr=LR)
 elif OPTIMIZER == 'Adam':
-    optimizer = optim.Adam(model.parameters(), lr=LR)
+    optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=1e-4)
 elif OPTIMIZER == 'Adagrad':
     optimizer = optim.Adagrad(model.parameters(), lr=LR)
+elif OPTIMIZER == 'SGD_momentum':
+    optimizer = optim.SGD(model.parameters(), lr=LR, momentum=0.2)
 loss_function = nn.CrossEntropyLoss()
 
 
 #--- training ---
 starting_time = time.time()
 actual_epochs = 0
+prev_avg_dev_loss = float('inf')
+count = 0
 
 for epoch in range(N_EPOCHS):
     train_loss = 0
@@ -149,8 +154,6 @@ for epoch in range(N_EPOCHS):
 
     dev_accuracies = []
     avg_dev_accuracy = 0
-
-    prev_avg_dev_loss = float('inf')
     
     dev_losses = []
     avg_dev_loss = 0
@@ -160,7 +163,8 @@ for epoch in range(N_EPOCHS):
         output = model(data)
         loss = loss_function(output, target)
         dev_loss += loss.item()
-        dev_losses.append(dev_loss)
+        # dev_losses.append(dev_loss / (batch_num + 1))
+        dev_losses.append(loss.item())
         _, predictions = torch.max(output.data, 1)
         dev_correct += (predictions == target).sum().item()
         total += target.size(0)
@@ -173,10 +177,18 @@ for epoch in range(N_EPOCHS):
 
     avg_dev_accuracy = np.mean(dev_accuracies)
     avg_dev_loss = np.mean(dev_losses)
-        
-    if epoch > 5 and avg_dev_loss > prev_avg_dev_loss:
-        print('Early stopping')
-        break
+
+
+    # if epoch > 10 and avg_dev_loss > prev_avg_dev_loss:
+    if avg_dev_loss > prev_avg_dev_loss:
+        count += 1
+        print(f'Count: {count}')
+        if count == 2:
+            print('Early stopping')
+            print(f'Previous average dev loss: {prev_avg_dev_loss:.2f} - Current average dev loss: {avg_dev_loss:.2f}')
+            break
+    
+    print(f'Previous average dev loss: {prev_avg_dev_loss:.2f} - Current average dev loss: {avg_dev_loss:.2f}')
     prev_avg_dev_loss = avg_dev_loss
 
     actual_epochs += 1
@@ -233,12 +245,6 @@ text += '-' * 50 + '\n'
 print(text)
 
 # save results to file if some of the hyperparameters were changed
-with open('results.txt', 'a+') as f:
-    lines = f.readlines()
-    lines = lines[:-5]
-    text = text.split('\n')[:-5]
-    for line, text_line in zip(lines, text):
-        if line != text_line:
-            f.write('\n'.join(text))
-            break
+with open('results.txt', 'a') as f:
+    f.write(text)
 
