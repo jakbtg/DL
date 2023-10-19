@@ -34,7 +34,8 @@ DATA_DIR = '../data/sign_mnist_%s'
 # Think on what kind of transformations may be meaningful for this data.
 # Eg., horizontal-flip is definitely a bad idea for sign language data.
 # You can use another transformation here if you find a better one.
-train_transform = transforms.Compose([
+train_transform = transforms.Compose([  #transforms.ColorJitter(brightness=.5, contrast=.3),
+                                        #transforms.RandomAdjustSharpness(sharpness_factor=1.1, p=.1),
                                         #transforms.RandomHorizontalFlip(),
                                         transforms.ToTensor()])
 test_transform = transforms.Compose([transforms.ToTensor()])
