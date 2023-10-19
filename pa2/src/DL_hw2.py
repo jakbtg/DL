@@ -90,7 +90,6 @@ class CNN(nn.Module):
             nn.Linear(96, num_classes)
         )
         self.dropout = nn.Dropout(p=0.2)
-        # self.batch_norm = nn.BatchNorm2d(32)
 
 
     def forward(self, x):
@@ -186,7 +185,6 @@ for epoch in range(N_EPOCHS):
         output = model(data)
         loss = loss_function(output, target)
         dev_loss += loss.item()
-        # dev_losses.append(dev_loss / (batch_num + 1))
         dev_losses.append(loss.item())
         _, predictions = torch.max(output.data, 1)
         dev_correct += (predictions == target).sum().item()
@@ -233,7 +231,6 @@ with torch.no_grad():
         data, target = data.to(device), target.to(device)
         
         # WRITE CODE HERE
-        # Compute predictions
         output = model(data)
         loss = loss_function(output, target)
         test_loss += loss.item()
@@ -269,7 +266,5 @@ text += f'Total training time: {time.strftime("%Hh:%Mm:%Ss", time.gmtime(elapsed
 text += '-' * 50 + '\n'
 print(text)
 
-# save results to file if some of the hyperparameters were changed
 with open('results.txt', 'a') as f:
     f.write(text)
-
