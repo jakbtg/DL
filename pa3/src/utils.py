@@ -27,6 +27,10 @@ def build_datasets(force=False):
             writer = csv.writer(f)
             writer.writerows(data[20000:])
 
+        with open('../data/sent140.train.mini.csv', 'w') as f:
+            writer = csv.writer(f)
+            writer.writerows(data[20000:30000])
+
 
 def clean_data():
     for file in os.listdir('../data'):
@@ -55,6 +59,6 @@ def clean_data():
 
 
 if __name__ == '__main__':
-    build_datasets()
+    build_datasets(force=True)
     clean_data()
 
