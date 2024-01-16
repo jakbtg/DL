@@ -49,8 +49,8 @@ def clean_data():
                     elif row[0] == '4':
                         row[0] = '1'
                 # Remove all columns except the first and last
-                for row in data:
-                    del row[1:-1]
+                # for row in data:
+                #     del row[1:-1]
                 # Write the cleaned data to the file
                 with open('../data/' + file, 'w') as f:
                     writer = csv.writer(f)
